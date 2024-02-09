@@ -17,3 +17,20 @@ class BatchCreate(BaseModel):
     identificator_rc: str = Field(..., alias="ИдентификаторРЦ")
     start_time: datetime.datetime = Field(..., alias="ДатаВремяНачалаСмены")
     end_time: datetime.datetime = Field(..., alias="ДатаВремяОкончанияСмены")
+
+
+class BatchRead(BaseModel):
+    id: int
+    status: bool
+    assignment: str
+    line: str
+    shift: str
+    squad: str
+    number: int
+    date: datetime.date
+    nomenclature: str
+    codekn: str
+    identificator_rc: str
+    start_time: datetime.datetime
+    end_time: datetime.datetime
+    closed_at: Optional[datetime.datetime]
