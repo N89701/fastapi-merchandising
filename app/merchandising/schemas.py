@@ -34,3 +34,18 @@ class BatchRead(BaseModel):
     start_time: datetime.datetime
     end_time: datetime.datetime
     closed_at: Optional[datetime.datetime]
+
+
+class BatchUpdate(BaseModel):
+    status: Optional[bool] = None
+    assignment: Optional[str] = None
+    line: Optional[str] = None
+    shift: Optional[str] = None
+    squad: Optional[str] = None
+    number: Optional[int] = None
+    date: Optional[datetime.date] = None
+    nomenclature: Optional[str] = None
+    codekn: Optional[str] = None
+    identificator_rc: Optional[str] = None
+    start_time: Optional[datetime.datetime] = None
+    end_time: Optional[datetime.datetime] = None
