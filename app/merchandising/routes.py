@@ -1,9 +1,9 @@
-from datetime import date 
+from datetime import date, datetime
 from typing import List, Optional, Union
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status 
 from fastapi.encoders import jsonable_encoder
-# from sqlalchemy import or_
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from database import get_db
@@ -50,26 +50,44 @@ def get_batches(
 def get_batch(id: int, db: Session = Depends(get_db)):
     batch = db.query(Batch).get(id)
     if batch is None:
-        raise HTTPException(status_code=404, detail="This batch doesn't exists")
+        raise HTTPException(status_code=404, detail="Batch doesn't exists")
     return batch
 
 
 @router_batches.post('/', status_code=status.HTTP_201_CREATED)
 def create_batch(batches: List[BatchCreate], db: Session = Depends(get_db)):
     for batch in batches:
-        batch = Batch(**batch.dict())
-        db.add(batch)
+        date = batch.date
+        number = batch.number
+        existing_batches = db.query(Batch).filter(
+            Batch.date == date,
+            Batch.number == number
+        ).all()
+        for existing_batch in existing_batches:
+            db.delete(existing_batch)
+        new_batch = Batch(**batch.dict())
+        db.add(new_batch)
     db.commit()
+    db.refresh(new_batch)
     return batches
 
 
-@router_batches.patch('/{id}/', status_code=status.HTTP_200_OK)
+@router_batches.patch(
+    '/{id}/',
+    status_code=status.HTTP_200_OK,
+    response_model=BatchRead
+)
 def update_batch(id: int, request: BatchUpdate, db: Session = Depends(get_db)):
     batch = db.query(Batch).get(id)
     if batch is None:
         raise HTTPException(status_code=400, detail="This batch doesn't exists")
-    update_date = request.dict(exclude_unset=True)
-    for field, value in update_date.items():
+    update_data = request.dict(exclude_unset=True)
+    if 'status' in update_data and update_data['status'] != batch.status:
+        if update_data['status']:
+            batch.closed_at = datetime.now()
+        else:
+            batch.closed_at = None
+    for field, value in update_data.items():
         setattr(batch, field, value)
     db.commit()
     db.refresh(batch)
