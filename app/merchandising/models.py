@@ -22,9 +22,9 @@ class Batch(Base):
     nomenclature = Column(String, nullable=False)
     codekn = Column(String, nullable=False, index=True)
     identificator_rc = Column(String, nullable=False)
-    start_time = Column(DateTime, nullable=False)
-    end_time = Column(DateTime, nullable=False)
-    closed_at = Column(DateTime)
+    start_time = Column(TIMESTAMP, nullable=False)
+    end_time = Column(TIMESTAMP, nullable=False)
+    closed_at = Column(TIMESTAMP)
 
 
 class Product(Base):

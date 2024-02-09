@@ -1,6 +1,7 @@
-from typing import List
+from datetime import date 
+from typing import List, Optional, Union
 
-from fastapi import APIRouter, Depends, status, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query, status 
 from fastapi.encoders import jsonable_encoder
 # from sqlalchemy import or_
 from sqlalchemy.orm import Session
@@ -17,8 +18,32 @@ router_batches = APIRouter(
 
 
 @router_batches.get('/', response_model=List[BatchRead])
-def get_batches(db: Session = Depends(get_db)): 
-    return db.query(Batch).all()
+def get_batches(
+    db: Session = Depends(get_db),
+    status: bool = None,
+    line: str = None,
+    shift: str = None,
+    assignment: str = Query(None, min_length=1, max_length=255),
+    date: Optional[Union[date, str]] = Query(None),
+    number: int = Query(None, gt=0),
+    limit: int = Query(10, gt=0, le=1000),
+    offset: int = Query(0, ge=0)
+    ): 
+    query = db.query(Batch)
+    if status is not None:
+        query = query.filter(Batch.status == status)
+    if line is not None:
+        query = query.filter(Batch.line == line)
+    if shift is not None:
+        query = query.filter(Batch.shift == shift)
+    if assignment:
+        query = query.filter(Batch.assignment.ilike(f"%{assignment}%"))
+    if date:
+        query = query.filter(Batch.date == date)
+    if number:
+        query = query.filter(Batch.number == number)
+    query = query.offset(offset).limit(limit)
+    return query.all()
 
 
 @router_batches.get('/{id}/', response_model=BatchRead)
