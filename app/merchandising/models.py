@@ -1,9 +1,10 @@
 import datetime
 
 from sqlalchemy import (
-    Boolean, Column, Integer, String, TIMESTAMP, Date, DateTime
+    Boolean, Column, ForeignKey, Integer, String, TIMESTAMP, Date, DateTime
 )
 from sqlalchemy.ext.declarative import DeclarativeMeta, declarative_base
+from sqlalchemy.orm import relationship
 
 Base: DeclarativeMeta = declarative_base()
 
@@ -25,6 +26,7 @@ class Batch(Base):
     start_time = Column(TIMESTAMP, nullable=False)
     end_time = Column(TIMESTAMP, nullable=False)
     closed_at = Column(TIMESTAMP)
+    products = relationship("Product", back_populates="batch")
 
 
 class Product(Base):
@@ -32,7 +34,9 @@ class Product(Base):
 
     id = Column(Integer, primary_key=True)
     code = Column(String, nullable=False, unique=True, index=True)
-    batch = Column(Integer, nullable=False)
+    batch_number = Column(Integer, nullable=False)
     date = Column(Date, nullable=False)
     is_aggregated = Column(Boolean, default=False)
     aggregated_at = Column(DateTime)
+    batch_id = Column(Integer, ForeignKey("batch.id"))
+    batch = relationship("Batch", back_populates="products")

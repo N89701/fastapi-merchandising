@@ -1,14 +1,16 @@
 from datetime import date, datetime
 from typing import List, Optional, Union
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status 
-from fastapi.encoders import jsonable_encoder
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
 from database import get_db
-from merchandising.models import Batch
-from merchandising.schemas import BatchCreate, BatchRead, BatchUpdate
+from merchandising.models import Batch, Product
+from merchandising.schemas import (
+    Aggregation, BatchCreate, BatchRead, BatchUpdate, ProductCreate,
+    ProductRead
+)
 
 
 router_batches = APIRouter(
@@ -80,7 +82,7 @@ def create_batch(batches: List[BatchCreate], db: Session = Depends(get_db)):
 def update_batch(id: int, request: BatchUpdate, db: Session = Depends(get_db)):
     batch = db.query(Batch).get(id)
     if batch is None:
-        raise HTTPException(status_code=400, detail="This batch doesn't exists")
+        raise HTTPException(status_code=404, detail="Batch doesn't exists")
     update_data = request.dict(exclude_unset=True)
     if 'status' in update_data and update_data['status'] != batch.status:
         if update_data['status']:
@@ -92,3 +94,58 @@ def update_batch(id: int, request: BatchUpdate, db: Session = Depends(get_db)):
     db.commit()
     db.refresh(batch)
     return batch
+
+
+router_products = APIRouter(
+    tags=['products'],
+    prefix='/products',
+)
+
+
+@router_products.post('/', status_code=status.HTTP_201_CREATED)
+def create_product(
+    products: List[ProductCreate],
+    db: Session = Depends(get_db)
+):
+    try:
+        for product in products:
+            batch = db.query(Batch).filter(
+                Batch.date == product.date,
+                Batch.number == product.batch_number
+            ).first()
+            if batch:
+                new_product = Product(
+                    **product.dict(exclude={'batch'}),
+                    batch_id=batch.id
+                )
+                db.add(new_product)
+        db.commit()
+        return products
+    except IntegrityError:
+        db.rollback()
+        raise HTTPException(
+            status_code=400,
+            detail="The request body is incorrect. Please check the product code"
+        )
+
+
+@router_products.patch("/", status_code=200, response_model=ProductRead)
+def aggregate_product(aggregation: Aggregation, db: Session = Depends(get_db)):
+    product = db.query(Product).filter(Product.code == aggregation.code).first()
+    if not product:
+        raise HTTPException(status_code=404, detail="Product not found.")
+    if product.is_aggregated:
+        aggregated_at = product.aggregated_at.strftime("%Y-%m-%d %H:%M:%S")
+        raise HTTPException(
+            status_code=400,
+            detail=f"Unique code already used at {aggregated_at}"
+        )
+    if product.batch_id != aggregation.id:
+        raise HTTPException(
+            status_code=400,
+            detail="Unique code is attached to another batch"
+        )
+    product.is_aggregated = True
+    product.aggregated_at = datetime.now()
+    db.commit()
+    return product

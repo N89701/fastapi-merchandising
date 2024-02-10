@@ -4,6 +4,22 @@ from typing import List, Optional
 from pydantic import BaseModel, Field
 
 
+class ProductCreate(BaseModel):
+    code: str = Field(..., alias="УникальныйКодПродукта")
+    batch_number: int = Field(..., alias="НомерПартии")
+    date: datetime.date = Field(..., alias="ДатаПартии")
+
+
+class ProductRead(BaseModel):
+    id: int
+    code: str
+    batch_number: int
+    date: datetime.date
+    is_aggregated: bool
+    aggregated_at: Optional[datetime.datetime]
+    batch_id: int
+
+
 class BatchCreate(BaseModel):
     status: bool = Field(..., alias="СтатусЗакрытия")
     assignment: str = Field(..., alias="ПредставлениеЗаданияНаСмену")
@@ -34,6 +50,7 @@ class BatchRead(BaseModel):
     start_time: datetime.datetime
     end_time: datetime.datetime
     closed_at: Optional[datetime.datetime]
+    products: List[ProductRead]
 
 
 class BatchUpdate(BaseModel):
@@ -49,3 +66,8 @@ class BatchUpdate(BaseModel):
     identificator_rc: Optional[str] = None
     start_time: Optional[datetime.datetime] = None
     end_time: Optional[datetime.datetime] = None
+
+
+class Aggregation(BaseModel):
+    id: int
+    code: str

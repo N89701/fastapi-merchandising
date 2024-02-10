@@ -1,8 +1,8 @@
 """empty message
 
-Revision ID: f25a04f0ed93
+Revision ID: 330692f34a2a
 Revises: 
-Create Date: 2024-02-10 00:23:17.420064
+Create Date: 2024-02-10 19:26:58.444541
 
 """
 from typing import Sequence, Union
@@ -12,7 +12,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = 'f25a04f0ed93'
+revision: str = '330692f34a2a'
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -41,10 +41,12 @@ def upgrade() -> None:
     op.create_table('product',
     sa.Column('id', sa.Integer(), nullable=False),
     sa.Column('code', sa.String(), nullable=False),
-    sa.Column('batch', sa.Integer(), nullable=False),
+    sa.Column('batch_number', sa.Integer(), nullable=False),
     sa.Column('date', sa.Date(), nullable=False),
     sa.Column('is_aggregated', sa.Boolean(), nullable=True),
     sa.Column('aggregated_at', sa.DateTime(), nullable=True),
+    sa.Column('batch_id', sa.Integer(), nullable=True),
+    sa.ForeignKeyConstraint(['batch_id'], ['batch.id'], ),
     sa.PrimaryKeyConstraint('id')
     )
     op.create_index(op.f('ix_product_code'), 'product', ['code'], unique=True)
