@@ -7,11 +7,8 @@ from sqlalchemy.orm import Session
 
 from .database import get_db
 from .models import Batch, Product
-from .schemas import (
-    Aggregation, BatchCreate, BatchRead, BatchUpdate, ProductCreate,
-    ProductRead
-)
-
+from .schemas import (Aggregation, BatchCreate, BatchRead, BatchUpdate,
+                      ProductCreate, ProductRead)
 
 router_batches = APIRouter(
     tags=['batches'],
@@ -30,7 +27,7 @@ def get_batches(
     number: int = Query(None, gt=0),
     limit: int = Query(10, gt=0, le=1000),
     offset: int = Query(0, ge=0)
-    ): 
+):
     query = db.query(Batch)
     if status is not None:
         query = query.filter(Batch.status == status)
@@ -130,13 +127,15 @@ def create_product(
         db.rollback()
         raise HTTPException(
             status_code=400,
-            detail="The request body is incorrect. Please check the product code"
+            detail="Request body is incorrect. Please check the product code"
         )
 
 
 @router_products.patch("/", status_code=200, response_model=ProductRead)
 def aggregate_product(aggregation: Aggregation, db: Session = Depends(get_db)):
-    product = db.query(Product).filter(Product.code == aggregation.code).first()
+    product = db.query(Product).filter(
+        Product.code == aggregation.code
+    ).first()
     if not product:
         raise HTTPException(status_code=404, detail="Product not found.")
     if product.is_aggregated:

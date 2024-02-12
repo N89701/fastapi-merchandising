@@ -1,5 +1,5 @@
 from fastapi.testclient import TestClient
-from sqlalchemy import create_engine, StaticPool
+from sqlalchemy import StaticPool, create_engine
 from sqlalchemy.orm import sessionmaker
 
 from src.database import get_db
@@ -147,30 +147,30 @@ def test_product_attach_to_batch():
 
 def test_aggregation():
     response = client.patch("/products/", json={
-            "id": 1,
-            "code": "Unexist product"
-        }
+        "id": 1,
+        "code": "Unexist product"
+    }
     )
-    assert response.json()["detail"]=='Product not found.'
+    assert response.json()["detail"] == 'Product not found.'
     response = client.patch("/products/", json={
-            "id": 999,
-            "code": "Fastapi"
-        }
+        "id": 999,
+        "code": "Fastapi"
+    }
     )
-    assert response.json()["detail"]=='Unique code is attached to another batch'
+    assert response.json()["detail"] == 'Code is attached to another batch'
     response = client.patch("/products/", json={
-            "id": 1,
-            "code": "Fastapi"
-        }
+        "id": 1,
+        "code": "Fastapi"
+    }
     )
     assert response.json()["is_aggregated"] is True
     assert response.json()["aggregated_at"] is not None
     response = client.patch("/products/", json={
-            "id": 1,
-            "code": "Fastapi"
-        }
+        "id": 1,
+        "code": "Fastapi"
+    }
     )
-    assert response.json()["detail"][:27]=='Unique code already used at'    
+    assert response.json()["detail"][:27] == 'Unique code already used at'
 
 
 def setup() -> None:

@@ -10,8 +10,4 @@ RUN pip install -r requirements.txt
 
 COPY . .
 
-# RUN chmod a+x docker/*.sh
-
 EXPOSE 80
-
-# CMD ["alembic", "upgrade", "head"]

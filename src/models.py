@@ -1,8 +1,5 @@
-import datetime
-
-from sqlalchemy import (
-    Boolean, Column, ForeignKey, Integer, String, TIMESTAMP, Date, DateTime
-)
+from sqlalchemy import (TIMESTAMP, Boolean, Column, Date, DateTime, ForeignKey,
+                        Integer, String)
 from sqlalchemy.ext.declarative import DeclarativeMeta, declarative_base
 from sqlalchemy.orm import relationship
 
