@@ -1,0 +1,7 @@
+name: merchandising workflow 
+
+on:
+    push:
+      branches: 
+          - main
+

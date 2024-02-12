@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 
-from app.routes import router_batches, router_products
+from .routes import router_batches, router_products
 
 app = FastAPI(title="Merchandising app")
 

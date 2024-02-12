@@ -5,9 +5,9 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from app.database import get_db
-from app.models import Batch, Product
-from app.schemas import (
+from .database import get_db
+from .models import Batch, Product
+from .schemas import (
     Aggregation, BatchCreate, BatchRead, BatchUpdate, ProductCreate,
     ProductRead
 )
