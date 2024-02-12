@@ -6,10 +6,8 @@ from src.database import get_db
 from src.main import app
 from src.models import Base
 
-# Setup the TestClient
 client = TestClient(app)
 
-# Setup the in-memory SQLite database for testing
 DATABASE_TEST_URL = "sqlite:///:memory:"
 engine = create_engine(
     DATABASE_TEST_URL,
