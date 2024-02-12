@@ -157,7 +157,7 @@ def test_aggregation():
         "code": "Fastapi"
     }
     )
-    assert response.json()["detail"] == 'Code is attached to another batch'
+    assert response.json()["detail"] == 'Unique code is attached to another batch'
     response = client.patch("/products/", json={
         "id": 1,
         "code": "Fastapi"
