@@ -5,9 +5,9 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import Session
 
-from database import get_db
-from merchandising.models import Batch, Product
-from merchandising.schemas import (
+from app.database import get_db
+from app.models import Batch, Product
+from app.schemas import (
     Aggregation, BatchCreate, BatchRead, BatchUpdate, ProductCreate,
     ProductRead
 )
@@ -70,7 +70,6 @@ def create_batch(batches: List[BatchCreate], db: Session = Depends(get_db)):
         new_batch = Batch(**batch.dict())
         db.add(new_batch)
     db.commit()
-    db.refresh(new_batch)
     return batches
 
 
@@ -102,11 +101,16 @@ router_products = APIRouter(
 )
 
 
-@router_products.post('/', status_code=status.HTTP_201_CREATED)
+@router_products.post(
+    '/',
+    status_code=status.HTTP_201_CREATED,
+    response_model=List[ProductRead]
+)
 def create_product(
     products: List[ProductCreate],
     db: Session = Depends(get_db)
 ):
+    added_products = []
     try:
         for product in products:
             batch = db.query(Batch).filter(
@@ -118,9 +122,10 @@ def create_product(
                     **product.dict(exclude={'batch'}),
                     batch_id=batch.id
                 )
+                added_products.append(new_product)
                 db.add(new_product)
         db.commit()
-        return products
+        return added_products
     except IntegrityError:
         db.rollback()
         raise HTTPException(
